@@ -45,12 +45,14 @@ namespace Product.Application.Commands
                     throw new ApplicationException($"Product with SKU '{request.Sku}' already exists");
                 }
 
-                product.Update(
+                product.Update
+                (
                     request.Name,
                     request.Description,
                     request.Price,
                     request.Category,
-                    request.Sku);
+                    request.Sku
+                );
 
                 await _repository.UpdateAsync(product, cancellationToken);
 
