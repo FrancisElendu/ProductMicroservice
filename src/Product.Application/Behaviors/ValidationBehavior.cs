@@ -18,6 +18,8 @@ namespace Product.Application.Behaviors
             if (_validators.Any())
             {
                 var context = new ValidationContext<TRequest>(request);
+
+                // Validate all registered validators for this request
                 var validationResults = await Task.WhenAll(
                     _validators.Select(v => v.ValidateAsync(context, cancellationToken)));
                 var failures = validationResults
@@ -26,9 +28,10 @@ namespace Product.Application.Behaviors
                     .ToList();
 
                 if (failures.Count != 0)
-                    throw new ValidationException(failures);
+                    throw new ValidationException(failures);  // Stop execution here if validation fails
             }
 
+            // If validation passes, continue to the actual handler
             return await next();
         }
     }

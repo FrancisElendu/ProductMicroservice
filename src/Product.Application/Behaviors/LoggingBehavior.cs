@@ -17,10 +17,14 @@ namespace Product.Application.Behaviors
         public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
         {
             var requestName = typeof(TRequest).Name;
+
+            // Log BEFORE handler execution
             _logger.LogInformation("Handling request: {RequestName} - {Request}", requestName, JsonSerializer.Serialize(request));
 
+            // Execute the actual handler
             var response = await next();
 
+            // Log AFTER handler execution
             _logger.LogInformation("Handled request: {RequestName}", requestName);
             return response;
         }

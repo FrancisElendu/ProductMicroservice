@@ -3,6 +3,7 @@ using Product.Application.Commands;
 
 namespace Product.Application.Validators
 {
+    // This validator will automatically be called by ValidationBehavior
     public class CreateProductCommandValidator : AbstractValidator<CreateProductCommand>
     {
         public CreateProductCommandValidator()
