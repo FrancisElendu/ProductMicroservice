@@ -22,6 +22,23 @@ builder.Services.AddApiVersioning(options =>
 });
 
 // Add Swagger/OpenAPI
+//builder.Services.AddEndpointsApiExplorer();
+//builder.Services.AddSwaggerGen(c =>
+//{
+//    c.SwaggerDoc("v1", new OpenApiInfo
+//    {
+//        Title = "Product Microservice API",
+//        Version = "v1",
+//        Description = "Clean Architecture Product Microservice with CQRS and Factory Pattern"
+//    });
+
+//    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+//    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+//    c.IncludeXmlComments(xmlPath);
+//});
+
+//new implementation to support API versioning in Swagger
+// Add Swagger/OpenAPI
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -32,10 +49,60 @@ builder.Services.AddSwaggerGen(c =>
         Description = "Clean Architecture Product Microservice with CQRS and Factory Pattern"
     });
 
-    var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-    var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-    c.IncludeXmlComments(xmlPath);
+    // Try to include XML comments if the file exists
+    try
+    {
+        var xmlFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+        var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
+
+        if (File.Exists(xmlPath))
+        {
+            c.IncludeXmlComments(xmlPath);
+        }
+        else
+        {
+            // Log warning but don't crash
+            var logger = builder.Services.BuildServiceProvider()
+                .GetRequiredService<ILogger<Program>>();
+            logger.LogWarning("XML documentation file not found at {XmlPath}. Swagger documentation may be limited.", xmlPath);
+        }
+    }
+    catch (Exception ex)
+    {
+        // Log error but continue startup
+        var logger = builder.Services.BuildServiceProvider()
+            .GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "Failed to load XML documentation for Swagger");
+    }
+
+    // Optional: Add bearer token authentication
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer"
+    });
+
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
 });
+
+//builder.Services.AddEndpointsApiExplorer();
+//builder.Services.AddSwaggerGen();
 
 // Add layers
 builder.Services.AddApplication();
